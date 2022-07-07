@@ -14,6 +14,10 @@
 <body>
   <div id="map" style="width: 100%; height: 450px; background: #eee;"></div>
   <button id="find_me">find me</button>
+  <select name="" id="provinces">
+    <option value="-1" selected disabled>انتخاب استان</option>
+  </select>
+  <select name="" id="cities"></select>
   <p></p>
 
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.8.0/dist/leaflet.css"
@@ -42,12 +46,10 @@
       return dist
     }
 
+
     // Get data
     (async function () {
-      const res = await fetch('./chains.json')
-      const storeList = await res.json()
-
-      var map = L.map('map').setView([32, 51], 13);
+      var map = L.map('map').setView([32, 51], 8);
 
       L.TileLayer.wmsHeader('https://map.ir/shiveh', {
         layers: "Shiveh:Shiveh",
@@ -63,11 +65,91 @@
         ])
         .addTo(map);
 
-      // function onLocationFound(e) {
-      //   console.log(e.latlng)
-      // }
+      // map.on('zoomend', function (e) {
+      //   console.log(map.getZoom());
+      //   if (map.getZoom() < 7) {
+      //     map.setZoom(7);
+      //   }
+      // });
 
-      // map.on('locationfound', onLocationFound);
+      var markerGroup = L.layerGroup().addTo(map);
+
+      const res = await fetch('./chains.json')
+      const storeList = await res.json()
+
+      console.log(storeList)
+
+      const resPlaces = await fetch('./city.json')
+      const places = await resPlaces.json()
+
+      const groupBy = function (xs, key) {
+        return xs.reduce(function (rv, x) {
+          (rv[x[key]] = rv[x[key]] || []).push(x);
+          return rv;
+        }, {});
+      };
+
+      const groupedPlaces = groupBy(places, 'state')
+
+      // render list of provinces
+      Object.keys(groupedPlaces).sort().map(item => {
+        document.querySelector('#provinces').insertAdjacentHTML('beforeend', `<option value="${item}">${item}</option>`)
+      })
+
+      // render list of cities on province change
+      document.querySelector('#provinces').addEventListener('change', async e => {
+        markerGroup.clearLayers();
+        document.querySelector('#cities').innerHTML = ''
+
+        console.log(groupedPlaces[e.target.value])
+
+        // render city options to select
+        groupedPlaces[e.target.value].map(item => {
+          document.querySelector('#cities').insertAdjacentHTML('beforeend', `<option value="${item.city}">${item.city}</option>`)
+        })
+
+        // render markers on province change
+        const arr = storeList.data.map(item => {
+          if (item.state === e.target.value) {
+            const marker = L.marker([item.lat, item.lng]).addTo(markerGroup);
+            marker.bindPopup(`<h3>${item.name}</h3><p>${item.address}</p>`);
+            return [item.lat, item.lng]
+          }
+        }).filter(item => (item !== undefined)).filter(item => item.join() != '0,0')
+
+        map.fitBounds(arr);
+      })
+
+      // render markers on city change
+      document.querySelector('#cities').addEventListener('change', async e => {
+        markerGroup.clearLayers();
+
+        console.log(e.target.value)
+
+        const arr = storeList.data.map(item => {
+          if (item.city === e.target.value) {
+            const marker = L.marker([item.lat, item.lng]).addTo(markerGroup);
+            marker.bindPopup(`<h3>${item.name}</h3><p>${item.address}</p>`);
+            return [item.lat, item.lng]
+          }
+        }).filter(item => (item !== undefined)).filter(item => item.join() != '0,0')
+
+        map.fitBounds(arr);
+      })
+
+      function onLocationFound(e) {
+        L.marker(e.target.getCenter()).addTo(markerGroup).bindPopup("موقعیت شما").openPopup();
+
+        map.flyTo(e.latlng, 13);
+
+        storeList.data.map(item => {
+          if (distance(e.latlng.lat, e.latlng.lng, Number(item.lat), Number(item.lng), "K") <= map.getZoom() / 3) {
+            var marker = L.marker([item.lat, item.lng]).addTo(markerGroup).bindPopup(item.name)
+          }
+        })
+      }
+
+      map.on('locationfound', onLocationFound);
 
       map.locate({
         setView: true,
@@ -81,19 +163,16 @@
         })
       })
 
-      var markerGroup = L.layerGroup().addTo(map);
 
-      map.on('moveend', async function (e) {
+      map.on('dragend', async function (e) {
         markerGroup.clearLayers();
 
         const { lat, lng } = e.target.getCenter();
 
-        L.marker(e.target.getCenter()).addTo(markerGroup).bindPopup("موقعیت شما").openPopup();
-
-
+        L.marker(e.target.getCenter()).addTo(markerGroup).bindPopup("فروشگاه‌ها از اینجا").openPopup();
 
         storeList.data.map(item => {
-          if (distance(lat, lng, Number(item.lat), Number(item.lng), "K") <= 4) {
+          if (distance(lat, lng, Number(item.lat), Number(item.lng), "K") <= map.getZoom() / 3) {
             var marker = L.marker([item.lat, item.lng]).addTo(markerGroup).bindPopup(item.name)
           }
         })
