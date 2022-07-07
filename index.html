@@ -42,58 +42,64 @@
       return dist
     }
 
-    var map = L.map('map').setView([32, 51], 13);
-
-    L.TileLayer.wmsHeader('https://map.ir/shiveh', {
-      layers: "Shiveh:Shiveh",
-      format: 'image/png',
-      transparent: true,
-      attribution: '© OpenStreetMap'
-    },
-      [
-        {
-          header: "x-api-key",
-          value: "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiIsImp0aSI6ImVhOWE4M2IyYmM2MDMwN2M1NTdlYmZhMGRiNmViOTljZTkyZDlkOTg4NmI0ZjFjYjI4ZmJjNjBlYzdlMmFlMzI0NjE2ZWJkOTA3OWQ2YTM4In0.eyJhdWQiOiIxODY0MCIsImp0aSI6ImVhOWE4M2IyYmM2MDMwN2M1NTdlYmZhMGRiNmViOTljZTkyZDlkOTg4NmI0ZjFjYjI4ZmJjNjBlYzdlMmFlMzI0NjE2ZWJkOTA3OWQ2YTM4IiwiaWF0IjoxNjU3MDg4MjA0LCJuYmYiOjE2NTcwODgyMDQsImV4cCI6MTY1OTY4MDIwNCwic3ViIjoiIiwic2NvcGVzIjpbImJhc2ljIl19.Pxtx8REKmGNZvYkknWcmkUgnvMQtRCw2HYyO1cKmyUvzNtiio2zsxIWDerH1o6jWH17BmnE2XHWXBhOT5NRkrFXKU2HJS-QXOeCDacUn_qwsLB5hHFs5m60wLErifL9o1RXcT8xg70RXQnBzJsW1qu0pr1GDub_RlF3bZj0GdDYxXHGgoWP1LKNloJy6lZU1j2cDgWIEKHurGall1oxaHEiJNDitQxIMbIyQ8z8XEs6fBh2EkU2XSezW9UP3gGRxR_kLk2ObbBr92fv9GGzIxSauA10QWCWb6ELogVcn_rO5jNGTmh14eeKnEZ0Cb8i6pXOXZ9vbHJzzRwIL-7qJkg"
-        }
-      ])
-      .addTo(map);
-
-    async function onLocationFound(e) {
-      document.querySelector('p').innerHTML = e.latlng.lat + ' --- ' + e.latlng.lng
-      var radius = e.accuracy;
-
-      L.marker(e.latlng).addTo(map)
-        .bindPopup("You are within " + radius + " meters from this point").openPopup();
-
-      L.circle(e.latlng, radius).addTo(map);
-
-
-
+    // Get data
+    (async function () {
       const res = await fetch('./chains.json')
       const storeList = await res.json()
 
-      storeList.data.map(item => {
-        if (distance(e.latlng.lat, e.latlng.lng, Number(item.lat), Number(item.lng), "K") <= 4) {
-          var marker = L.marker([item.lat, item.lng]).addTo(map);
-        }
-      })
-    }
+      var map = L.map('map').setView([32, 51], 13);
 
-    map.on('locationfound', onLocationFound);
+      L.TileLayer.wmsHeader('https://map.ir/shiveh', {
+        layers: "Shiveh:Shiveh",
+        format: 'image/png',
+        transparent: true,
+        attribution: '© OpenStreetMap'
+      },
+        [
+          {
+            header: "x-api-key",
+            value: "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiIsImp0aSI6ImVhOWE4M2IyYmM2MDMwN2M1NTdlYmZhMGRiNmViOTljZTkyZDlkOTg4NmI0ZjFjYjI4ZmJjNjBlYzdlMmFlMzI0NjE2ZWJkOTA3OWQ2YTM4In0.eyJhdWQiOiIxODY0MCIsImp0aSI6ImVhOWE4M2IyYmM2MDMwN2M1NTdlYmZhMGRiNmViOTljZTkyZDlkOTg4NmI0ZjFjYjI4ZmJjNjBlYzdlMmFlMzI0NjE2ZWJkOTA3OWQ2YTM4IiwiaWF0IjoxNjU3MDg4MjA0LCJuYmYiOjE2NTcwODgyMDQsImV4cCI6MTY1OTY4MDIwNCwic3ViIjoiIiwic2NvcGVzIjpbImJhc2ljIl19.Pxtx8REKmGNZvYkknWcmkUgnvMQtRCw2HYyO1cKmyUvzNtiio2zsxIWDerH1o6jWH17BmnE2XHWXBhOT5NRkrFXKU2HJS-QXOeCDacUn_qwsLB5hHFs5m60wLErifL9o1RXcT8xg70RXQnBzJsW1qu0pr1GDub_RlF3bZj0GdDYxXHGgoWP1LKNloJy6lZU1j2cDgWIEKHurGall1oxaHEiJNDitQxIMbIyQ8z8XEs6fBh2EkU2XSezW9UP3gGRxR_kLk2ObbBr92fv9GGzIxSauA10QWCWb6ELogVcn_rO5jNGTmh14eeKnEZ0Cb8i6pXOXZ9vbHJzzRwIL-7qJkg"
+          }
+        ])
+        .addTo(map);
 
-    map.locate({
-      setView: true,
-      maxZoom: 13,
-    })
+      // function onLocationFound(e) {
+      //   console.log(e.latlng)
+      // }
 
-    document.querySelector('#find_me').addEventListener('click', function () {
+      // map.on('locationfound', onLocationFound);
+
       map.locate({
         setView: true,
         maxZoom: 13,
       })
-    })
-  </script>
 
+      document.querySelector('#find_me').addEventListener('click', function () {
+        map.locate({
+          setView: true,
+          maxZoom: 13,
+        })
+      })
+
+      var markerGroup = L.layerGroup().addTo(map);
+
+      map.on('moveend', async function (e) {
+        markerGroup.clearLayers();
+
+        const { lat, lng } = e.target.getCenter();
+
+        L.marker(e.target.getCenter()).addTo(markerGroup).bindPopup("موقعیت شما").openPopup();
+
+
+
+        storeList.data.map(item => {
+          if (distance(lat, lng, Number(item.lat), Number(item.lng), "K") <= 4) {
+            var marker = L.marker([item.lat, item.lng]).addTo(markerGroup).bindPopup(item.name)
+          }
+        })
+      });
+    })()
+  </script>
 
   <div id="app"></div>
   <script type="module" src="/main.js"></script>
