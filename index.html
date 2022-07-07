@@ -13,6 +13,8 @@
 
 <body>
   <div id="map" style="width: 100%; height: 450px; background: #eee;"></div>
+  <button id="find_me">find me</button>
+  <p></p>
 
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.8.0/dist/leaflet.css"
     integrity="sha512-hoalWLoI8r4UszCkZ5kL8vayOGVae1oxXe/2A4AO6J9+580uKHDO3JdHb7NzwwzK5xr/Fs0W40kiNHxM9vyTtQ=="
@@ -40,10 +42,9 @@
       return dist
     }
 
-    var map = L.map('map').setView([32, 51], 10);
+    var map = L.map('map').setView([32, 51], 13);
 
     L.TileLayer.wmsHeader('https://map.ir/shiveh', {
-      maxZoom: 19,
       layers: "Shiveh:Shiveh",
       format: 'image/png',
       transparent: true,
@@ -57,7 +58,42 @@
       ])
       .addTo(map);
 
+    async function onLocationFound(e) {
+      document.querySelector('p').innerHTML = e.latlng.lat + ' --- ' + e.latlng.lng
+      var radius = e.accuracy;
+
+      L.marker(e.latlng).addTo(map)
+        .bindPopup("You are within " + radius + " meters from this point").openPopup();
+
+      L.circle(e.latlng, radius).addTo(map);
+
+
+
+      const res = await fetch('./chains.json')
+      const storeList = await res.json()
+
+      storeList.data.map(item => {
+        if (distance(e.latlng.lat, e.latlng.lng, Number(item.lat), Number(item.lng), "K") <= 4) {
+          var marker = L.marker([item.lat, item.lng]).addTo(map);
+        }
+      })
+    }
+
+    map.on('locationfound', onLocationFound);
+
+    map.locate({
+      setView: true,
+      maxZoom: 13,
+    })
+
+    document.querySelector('#find_me').addEventListener('click', function () {
+      map.locate({
+        setView: true,
+        maxZoom: 13,
+      })
+    })
   </script>
+
 
   <div id="app"></div>
   <script type="module" src="/main.js"></script>
