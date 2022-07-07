@@ -13,6 +13,15 @@
   <script src="https://unpkg.com/leaflet@1.8.0/dist/leaflet.js"
     integrity="sha512-BB3hKbKWOc9Ez/TAwyWxNXeoV9c1v6FIeYiBieIWkpLjauysF18NzgR1MBNBXf8/KABdlkX68nAhlwcDFLGPCQ=="
     crossorigin=""></script>
+
+  <link rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.5.3/MarkerCluster.Default.css"
+    integrity="sha512-6ZCLMiYwTeli2rVh3XAPxy3YoR5fVxGdH/pz+KMCzRY2M65Emgkw00Yqmhh8qLGeYQ3LbVZGdmOX9KUjSKr0TA=="
+    crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.5.3/leaflet.markercluster.js"
+    integrity="sha512-OFs3W4DIZ5ZkrDhBFtsCP6JXtMEDGmhl0QPlmWYBJay40TT1n3gt2Xuw8Pf/iezgW9CdabjkNChRqozl/YADmg=="
+    crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
   <script src="./leaflet-wms-header.js"></script>
 </head>
 
@@ -45,7 +54,7 @@
 
     // Get data
     (async function () {
-      var map = L.map('map').setView([32, 51], 8);
+      var map = L.map('map').setView([32, 51], 13);
 
       L.TileLayer.wmsHeader('https://map.ir/shiveh', {
         layers: "Shiveh:Shiveh",
@@ -69,6 +78,7 @@
       const resPlaces = await fetch('./city.json')
       const places = await resPlaces.json()
 
+
       const groupBy = function (xs, key) {
         return xs.reduce(function (rv, x) {
           (rv[x[key]] = rv[x[key]] || []).push(x);
@@ -77,6 +87,7 @@
       };
 
       const groupedPlaces = groupBy(places, 'state')
+      var markers = new L.MarkerClusterGroup();
 
       // render list of provinces
       Object.keys(groupedPlaces).sort().map(item => {
@@ -120,7 +131,10 @@
         map.fitBounds(arr);
       })
 
-      function onLocationFound(e) {
+      map.on('locationfound', (e) => {
+        markerGroup.clearLayers();
+        markers.clearLayers();
+
         L.marker(e.target.getCenter()).addTo(markerGroup).bindPopup("موقعیت شما").openPopup();
 
         map.flyTo(e.latlng, 13);
@@ -130,14 +144,43 @@
             var marker = L.marker([item.lat, item.lng]).addTo(markerGroup).bindPopup(`<h3>${item.name}</h3><p>${item.address}</p>`);
           }
         })
-      }
 
-      map.on('locationfound', onLocationFound);
+        map.on('dragend', async function (e) {
+          markerGroup.clearLayers();
+
+          const { lat, lng } = e.target.getCenter();
+
+          L.marker(e.target.getCenter()).addTo(markerGroup).bindPopup("فروشگاه‌ها از اینجا").openPopup();
+
+          storeList.data.map(item => {
+            if (distance(lat, lng, Number(item.lat), Number(item.lng), "K") <= map.getZoom() / 3) {
+              var marker = L.marker([item.lat, item.lng]).addTo(markerGroup).bindPopup(`<h3>${item.name}</h3><p>${item.address}</p>`);
+            }
+          })
+        });
+      });
+
+      map.on('locationerror', () => {
+        storeList.data.map(item => {
+          markers.addLayer(L.marker([item.lat, item.lng]).bindPopup(`<h3>${item.name}</h3><p>${item.address}</p>`))
+        })
+
+        map.addLayer(markers)
+        map.setZoom(5)
+      })
 
       map.locate({
         setView: true,
         maxZoom: 13,
+        timeout: 100
       })
+
+      navigator.permissions.query({ name: 'geolocation' })
+        .then(res => {
+          if (res.state != 'granted') {
+            alert('لطفا دسترسی به موقعیت جغرافیایی را برای مکان‌یابی خود فعال کنید')
+          }
+        })
 
       document.querySelector('#find_me').addEventListener('click', function () {
         map.locate({
@@ -146,19 +189,7 @@
         })
       })
 
-      map.on('dragend', async function (e) {
-        markerGroup.clearLayers();
 
-        const { lat, lng } = e.target.getCenter();
-
-        L.marker(e.target.getCenter()).addTo(markerGroup).bindPopup("فروشگاه‌ها از اینجا").openPopup();
-
-        storeList.data.map(item => {
-          if (distance(lat, lng, Number(item.lat), Number(item.lng), "K") <= map.getZoom() / 3) {
-            var marker = L.marker([item.lat, item.lng]).addTo(markerGroup).bindPopup(`<h3>${item.name}</h3><p>${item.address}</p>`);
-          }
-        })
-      });
     })()
   </script>
 
