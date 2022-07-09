@@ -90,7 +90,15 @@
 
       function renderMarkers(item) {
         L.marker([item.lat, item.lng]).addTo(markerGroup)
-          .bindPopup(`<h3>${item.name}</h3><p>${item.address}</p>`);
+          .bindPopup(`
+          <div>
+            <h3>${item.name}</h3>
+            <p>${item.address}</p>
+            <p>تلفن: <a href="tel:${item.phone}">${item.phone}</a></p>
+            <p>کد: ${item.code}</p>
+            <p><a href="https://www.google.com/maps/search/?api=1&query=${item.lat},${item.lng}" target="_blank">مشاهده در نقشه گوگل</a></p>
+          </div>
+          `);
 
         return [item.lat, item.lng]
       }
