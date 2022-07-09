@@ -86,20 +86,12 @@
       const places = await resPlaces.json()
       const groupedPlaces = groupBy(places, 'state')
 
-      var markers = new L.MarkerClusterGroup();
+      var markerClusterGroup = new L.MarkerClusterGroup();
 
-      function renderMarkers(e, list) {
-        markerGroup.clearLayers();
-
-        const arr = list.map(item => {
-          if (item.city === e.target.value) {
-            const marker = L.marker([item.lat, item.lng]).addTo(markerGroup);
-            marker.bindPopup(`<h3>${item.name}</h3><p>${item.address}</p>`);
-            return [item.lat, item.lng]
-          }
-        }).filter(item => (item !== undefined)).filter(item => item.join() != '0,0')
-
-        map.fitBounds(arr)
+      function renderMarkers(item) {
+        L.marker([item.lat, item.lng]).addTo(markerGroup)
+          .bindPopup(`<h3>${item.name}</h3><p>${item.address}</p>`);
+        return [item.lat, item.lng]
       }
 
       // render list of provinces
@@ -108,7 +100,8 @@
       })
 
       // render list of cities on province change
-      document.querySelector('#provinces').addEventListener('change', async e => {
+      document.querySelector('#provinces').addEventListener('change', e => {
+        markerClusterGroup.clearLayers();
         markerGroup.clearLayers();
         document.querySelector('#cities').innerHTML = ''
 
@@ -121,9 +114,7 @@
         // render markers on province change
         const arr = storeList.data.map(item => {
           if (item.state === e.target.value) {
-            const marker = L.marker([item.lat, item.lng]).addTo(markerGroup);
-            marker.bindPopup(`<h3>${item.name}</h3><p>${item.address}</p>`);
-            return [item.lat, item.lng]
+            return renderMarkers(item)
           }
         }).filter(item => (item !== undefined)).filter(item => item.join() != '0,0')
 
@@ -131,11 +122,21 @@
       })
 
       // render markers on city change
-      document.querySelector('#cities').addEventListener('change', e => renderMarkers(e, storeList.data))
+      document.querySelector('#cities').addEventListener('change', e => {
+        markerGroup.clearLayers();
+
+        const arr = storeList.data.map(item => {
+          if (item.city === e.target.value) {
+            return renderMarkers(item)
+          }
+        }).filter(item => (item !== undefined)).filter(item => item.join() != '0,0')
+
+        map.fitBounds(arr)
+      })
 
       map.on('locationfound', (e) => {
         markerGroup.clearLayers();
-        markers.clearLayers();
+        markerClusterGroup.clearLayers();
 
         L.marker(e.target.getCenter()).addTo(markerGroup).bindPopup("موقعیت شما").openPopup();
 
@@ -150,7 +151,7 @@
 
       map.on('dragend', async function (e) {
         markerGroup.clearLayers();
-        markers.clearLayers();
+        markerClusterGroup.clearLayers();
 
         const { lat, lng } = e.target.getCenter();
 
@@ -165,10 +166,10 @@
 
       map.on('locationerror', () => {
         storeList.data.map(item => {
-          markers.addLayer(L.marker([item.lat, item.lng]).bindPopup(`<h3>${item.name}</h3><p>${item.address}</p>`))
+          markerClusterGroup.addLayer(L.marker([item.lat, item.lng]).bindPopup(`<h3>${item.name}</h3><p>${item.address}</p>`))
         })
 
-        map.addLayer(markers)
+        map.addLayer(markerClusterGroup)
         map.setZoom(5)
       })
 
@@ -191,8 +192,6 @@
           maxZoom: 13,
         })
       })
-
-
     })()
   </script>
 
