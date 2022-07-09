@@ -84,11 +84,23 @@
 
       const resPlaces = await fetch('./city.json')
       const places = await resPlaces.json()
-
-
-
       const groupedPlaces = groupBy(places, 'state')
+
       var markers = new L.MarkerClusterGroup();
+
+      function renderMarkers(e, list) {
+        markerGroup.clearLayers();
+
+        const arr = list.map(item => {
+          if (item.city === e.target.value) {
+            const marker = L.marker([item.lat, item.lng]).addTo(markerGroup);
+            marker.bindPopup(`<h3>${item.name}</h3><p>${item.address}</p>`);
+            return [item.lat, item.lng]
+          }
+        }).filter(item => (item !== undefined)).filter(item => item.join() != '0,0')
+
+        map.fitBounds(arr)
+      }
 
       // render list of provinces
       Object.keys(groupedPlaces).sort().map(item => {
@@ -119,19 +131,7 @@
       })
 
       // render markers on city change
-      document.querySelector('#cities').addEventListener('change', async e => {
-        markerGroup.clearLayers();
-
-        const arr = storeList.data.map(item => {
-          if (item.city === e.target.value) {
-            const marker = L.marker([item.lat, item.lng]).addTo(markerGroup);
-            marker.bindPopup(`<h3>${item.name}</h3><p>${item.address}</p>`);
-            return [item.lat, item.lng]
-          }
-        }).filter(item => (item !== undefined)).filter(item => item.join() != '0,0')
-
-        map.fitBounds(arr)
-      })
+      document.querySelector('#cities').addEventListener('change', e => renderMarkers(e, storeList.data))
 
       map.on('locationfound', (e) => {
         markerGroup.clearLayers();
@@ -146,8 +146,6 @@
             var marker = L.marker([item.lat, item.lng]).addTo(markerGroup).bindPopup(`<h3>${item.name}</h3><p>${item.address}</p>`);
           }
         })
-
-
       });
 
       map.on('dragend', async function (e) {
