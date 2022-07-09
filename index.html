@@ -91,6 +91,7 @@
       function renderMarkers(item) {
         L.marker([item.lat, item.lng]).addTo(markerGroup)
           .bindPopup(`<h3>${item.name}</h3><p>${item.address}</p>`);
+
         return [item.lat, item.lng]
       }
 
@@ -144,12 +145,12 @@
 
         storeList.data.map(item => {
           if (distance(e.latlng.lat, e.latlng.lng, Number(item.lat), Number(item.lng), "K") <= map.getZoom() / 3) {
-            var marker = L.marker([item.lat, item.lng]).addTo(markerGroup).bindPopup(`<h3>${item.name}</h3><p>${item.address}</p>`);
+            renderMarkers(item)
           }
         })
       });
 
-      map.on('dragend', async function (e) {
+      map.on('dragend', function (e) {
         markerGroup.clearLayers();
         markerClusterGroup.clearLayers();
 
@@ -159,7 +160,7 @@
 
         storeList.data.map(item => {
           if (distance(lat, lng, Number(item.lat), Number(item.lng), "K") <= map.getZoom() / 3) {
-            var marker = L.marker([item.lat, item.lng]).addTo(markerGroup).bindPopup(`<h3>${item.name}</h3><p>${item.address}</p>`);
+            renderMarkers(item)
           }
         })
       });
