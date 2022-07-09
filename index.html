@@ -77,7 +77,8 @@
         ])
         .addTo(map);
 
-      var markerGroup = L.layerGroup().addTo(map);
+      const markerGroup = L.layerGroup().addTo(map);
+      const markerClusterGroup = new L.MarkerClusterGroup();
 
       const res = await fetch('./chains.json')
       const storeList = await res.json()
@@ -85,8 +86,6 @@
       const resPlaces = await fetch('./city.json')
       const places = await resPlaces.json()
       const groupedPlaces = groupBy(places, 'state')
-
-      var markerClusterGroup = new L.MarkerClusterGroup();
 
       function renderMarkers(item) {
         L.marker([item.lat, item.lng]).addTo(markerGroup)
