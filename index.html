@@ -79,23 +79,23 @@
 
 
       // change marker icons
-      const storeIcon = L.icon({
-        iconUrl: './icon-store.png',
-        iconSize: [48, 48],
-        iconAnchor: [24, 0]
-      });
+      // const storeIcon = L.icon({
+      //   iconUrl: './icon-store.png',
+      //   iconSize: [48, 48],
+      //   iconAnchor: [32, 0],
+      // });
 
-      const userIcon = L.icon({
-        iconUrl: './icon-user.png',
-        iconSize: [48, 48],
-        iconAnchor: [24, 0]
-      });
+      // const userIcon = L.icon({
+      //   iconUrl: './icon-user.png',
+      //   iconSize: [48, 48],
+      //   iconAnchor: [24, 0]
+      // });
 
-      const dragIcon = L.icon({
-        iconUrl: './icon-drag.png',
-        iconSize: [48, 48],
-        iconAnchor: [24, 0]
-      });
+      // const dragIcon = L.icon({
+      //   iconUrl: './icon-drag.png',
+      //   iconSize: [48, 48],
+      //   iconAnchor: [24, 0]
+      // });
 
       const markerGroup = L.layerGroup().addTo(map);
       const markerClusterGroup = new L.MarkerClusterGroup();
@@ -108,7 +108,7 @@
       const groupedPlaces = groupBy(places, 'state')
 
       function renderMarkers(item) {
-        L.marker([item.lat, item.lng], { icon: storeIcon }).addTo(markerGroup)
+        L.marker([item.lat, item.lng] /* , { icon: storeIcon } */).addTo(markerGroup)
           .bindPopup(`
           <div>
             <h3>${item.name}</h3>
@@ -166,7 +166,7 @@
         markerGroup.clearLayers();
         markerClusterGroup.clearLayers();
 
-        L.marker(e.target.getCenter(), { icon: userIcon }).addTo(markerGroup).bindPopup("موقعیت شما").openPopup();
+        L.marker(e.target.getCenter()).addTo(markerGroup).bindPopup("موقعیت شما").openPopup();
 
         map.flyTo(e.latlng, 13);
 
@@ -183,7 +183,7 @@
 
         const { lat, lng } = e.target.getCenter();
 
-        L.marker(e.target.getCenter(), { icon: dragIcon }).addTo(markerGroup).bindPopup("فروشگاه‌ها از اینجا").openPopup();
+        L.marker(e.target.getCenter()).addTo(markerGroup).bindPopup("فروشگاه‌ها از اینجا").openPopup();
 
         storeList.data.map(item => {
           if (distance(lat, lng, Number(item.lat), Number(item.lng), "K") <= map.getZoom() / 3) {
@@ -194,7 +194,7 @@
 
       map.on('locationerror', () => {
         storeList.data.map(item => {
-          markerClusterGroup.addLayer(L.marker([item.lat, item.lng], { icon: storeIcon }).bindPopup(`<h3>${item.name}</h3><p>${item.address}</p>`))
+          markerClusterGroup.addLayer(L.marker([item.lat, item.lng]).bindPopup(`<h3>${item.name}</h3><p>${item.address}</p>`))
         })
 
         map.addLayer(markerClusterGroup)
