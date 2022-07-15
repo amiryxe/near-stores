@@ -132,6 +132,19 @@
       const places = await resPlaces.json()
       const groupedPlaces = groupBy(places, 'state')
 
+      const newArr = []
+
+      Object.keys(groupedPlaces)
+        .sort()
+        .forEach(function (v, i) {
+          newArr.push({
+            province: v,
+            cities: groupedPlaces[v].map(item => item.city)
+          });
+        });
+
+      console.log(newArr)
+
       function renderMarkers(item) {
         L.marker([item.lat, item.lng], { icon: storeIcon }).addTo(markerGroup)
           .bindPopup(`
