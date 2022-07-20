@@ -5,7 +5,7 @@
   <meta charset="UTF-8" />
   <link rel="icon" type="image/svg+xml" href="favicon.svg" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Snowa store chains</title>
+  <title>Near stores on map</title>
 
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.8.0/dist/leaflet.css"
     integrity="sha512-hoalWLoI8r4UszCkZ5kL8vayOGVae1oxXe/2A4AO6J9+580uKHDO3JdHb7NzwwzK5xr/Fs0W40kiNHxM9vyTtQ=="
@@ -75,16 +75,6 @@
       L.tileLayer('https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png', {
         attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
       }).addTo(map);
-
-      // L.tileLayer('https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token={accessToken}', {
-      //   attribution: '© <a href="https://www.mapbox.com/about/maps/">Mapbox</a> © <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a> <strong><a href="https://www.mapbox.com/map-feedback/" target="_blank">Improve this map</a></strong>',
-      //   tileSize: 512,
-      //   maxZoom: 18,
-      //   zoomOffset: -1,
-      //   id: 'amiryxe/ckr7bb5a50hx017o1h4yl8j6t',
-      //   accessToken: 'pk.eyJ1IjoiYW1pcnl4ZSIsImEiOiJja3I3OTlwdmkzbjBpMzBydWgydzRtbzd4In0.l00CXZ1pKMPlAAaGqJk4iw'
-      // }).addTo(map);
-
 
       // L.TileLayer.wmsHeader('https://map.ir/shiveh', {
       //   layers: "Shiveh:Shiveh",
