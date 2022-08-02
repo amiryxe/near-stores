@@ -251,6 +251,25 @@
     })()
   </script>
 
+
+  <script>
+      (function (d, t) {
+        var BASE_URL = "http://localhost:3000";
+        var g = d.createElement(t), s = d.getElementsByTagName(t)[0];
+        g.src = BASE_URL + "/packs/js/sdk.js";
+        g.defer = true;
+        g.async = true;
+        s.parentNode.insertBefore(g, s);
+        g.onload = function () {
+          window.chatwootSDK.run({
+            websiteToken: 'x23mUSKEf8KFYUAKdaifLhFp',
+            baseUrl: BASE_URL
+          })
+        }
+      })(document, "script");
+  </script>
+
+
   <div id="app"></div>
   <script type="module" src="/main.js"></script>
 </body>
